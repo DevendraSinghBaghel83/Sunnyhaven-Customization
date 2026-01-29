@@ -9,6 +9,7 @@ pageextension 50500 "ECL Location Card Ext" extends "Location Card"
                 ApplicationArea = All;
                 Caption = 'D1valueCode';
                 ToolTip = 'Service Location code for QuickClaim D1ValueCode mapping';
+                Visible = false;
             }
         }
     }
