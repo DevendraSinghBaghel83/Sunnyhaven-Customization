@@ -10,12 +10,7 @@
   "help": "",
   "url": "",
   "logo": "",
-  "dependencies": [{
-"id": "8d4eab29-8c7f-4b6c-be9a-b7fdfb9da196",
-"name": "Continia Expense Management",
-"publisher": "Continia Software",
-"version": "27.2.1.289431"
-}],
+  "dependencies": [],
   "screenshots": [],
   "platform": "1.0.0.0",
   "application": "26.0.0.0",
