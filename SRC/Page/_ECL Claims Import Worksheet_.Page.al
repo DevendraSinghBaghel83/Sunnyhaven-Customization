@@ -75,6 +75,10 @@ page 50500 "ECL Claims Import Worksheet"
                 {
                     ApplicationArea = All;
                 }
+                field("Support Item"; Rec."Support Item")
+                {
+                    ApplicationArea = All;
+                }
                 field(Quantity; Rec.Quantity)
                 {
                     ApplicationArea = All;

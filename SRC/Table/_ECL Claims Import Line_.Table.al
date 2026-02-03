@@ -138,15 +138,15 @@ table 50501 "ECL Claims Import Line"
         field(55; "Quantity Decimal"; Decimal)
         {
             Caption = 'Quantity (Parsed)';
-            DecimalPlaces = 0: 5;
+            DecimalPlaces = 0 : 5;
         }
         field(56; "Unit Price Decimal"; Decimal)
         {
             Caption = 'Unit Price (Parsed)';
-            DecimalPlaces = 2: 5;
+            DecimalPlaces = 2 : 5;
         }
         // Status and Error tracking
-        field(100; Status;Enum "ECL Staging Status")
+        field(100; Status; Enum "ECL Staging Status")
         {
             Caption = 'Status';
             InitValue = Imported;
@@ -157,7 +157,7 @@ table 50501 "ECL Claims Import Line"
             Description = 'Validation/processing errors';
         }
         // Document tracking
-        field(110; "Document Type";Enum "Sales Document Type")
+        field(110; "Document Type"; Enum "Sales Document Type")
         {
             Caption = 'Document Type';
             Description = 'Created Sales Document Type';
@@ -199,26 +199,27 @@ table 50501 "ECL Claims Import Line"
         }
         key(InvoiceNo; "Batch No.", "Invoice Number")
         {
-        // For grouping lines by invoice
+            // For grouping lines by invoice
         }
         key(Status; "Batch No.", Status)
         {
-        // For filtering by status
+            // For filtering by status
         }
     }
     trigger OnInsert()
     begin
-        "Created DateTime":=CurrentDateTime;
-        "Created By":=CopyStr(UserId, 1, MaxStrLen("Created By"));
+        "Created DateTime" := CurrentDateTime;
+        "Created By" := CopyStr(UserId, 1, MaxStrLen("Created By"));
     end;
     /// <summary>
     /// Get next line number for a batch
     /// </summary>
-    procedure GetNextLineNo(BatchNo: Code[20]): Integer var
+    procedure GetNextLineNo(BatchNo: Code[20]): Integer
+    var
         ImportLine: Record "ECL Claims Import Line";
     begin
         ImportLine.SetRange("Batch No.", BatchNo);
-        if ImportLine.FindLast()then exit(ImportLine."Line No." + 10000);
+        if ImportLine.FindLast() then exit(ImportLine."Line No." + 10000);
         exit(10000);
     end;
     /// <summary>
@@ -226,8 +227,8 @@ table 50501 "ECL Claims Import Line"
     /// </summary>
     procedure ClearError()
     begin
-        "Error Description":='';
-        Status:=Status::Imported;
+        "Error Description" := '';
+        Status := Status::Imported;
         Modify(true);
     end;
     /// <summary>
@@ -235,8 +236,8 @@ table 50501 "ECL Claims Import Line"
     /// </summary>
     procedure SetError(ErrorMsg: Text)
     begin
-        "Error Description":=CopyStr(ErrorMsg, 1, MaxStrLen("Error Description"));
-        Status:=Status::Error;
+        "Error Description" := CopyStr(ErrorMsg, 1, MaxStrLen("Error Description"));
+        Status := Status::Error;
         Modify(true);
     end;
     /// <summary>
@@ -244,9 +245,10 @@ table 50501 "ECL Claims Import Line"
     /// </summary>
     procedure AppendError(ErrorMsg: Text)
     begin
-        if "Error Description" = '' then "Error Description":=CopyStr(ErrorMsg, 1, MaxStrLen("Error Description"))
+        if "Error Description" = '' then
+            "Error Description" := CopyStr(ErrorMsg, 1, MaxStrLen("Error Description"))
         else
-            "Error Description":=CopyStr("Error Description" + '; ' + ErrorMsg, 1, MaxStrLen("Error Description"));
-        Status:=Status::Error;
+            "Error Description" := CopyStr("Error Description" + '; ' + ErrorMsg, 1, MaxStrLen("Error Description"));
+        Status := Status::Error;
     end;
 }

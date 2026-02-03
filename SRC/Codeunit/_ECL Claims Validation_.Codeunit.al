@@ -2,6 +2,25 @@ codeunit 50501 "ECL Claims Validation"
 {
     var
         MappingHelper: Codeunit "ECL Mapping Helper";
+
+
+
+
+    procedure ValidateCustomerNumber(CustomerNo: Text[20]): Boolean
+    var
+        Customer: Record Customer;
+    begin
+        if CustomerNo = '' then begin
+            exit(false);
+        end;
+        if not Customer.Get(CustomerNo) then begin
+            exit(false);
+        end;
+        exit(true);
+    end;
+
+
+
     /// <summary>
     /// Validate all lines in a batch
     /// </summary>
@@ -39,6 +58,11 @@ codeunit 50501 "ECL Claims Validation"
         if not ResolveLocation(ImportLine) then HasErrors := true;
         // Resolve Activity
         if not ResolveActivity(ImportLine) then HasErrors := true;
+
+        if not ValidateCustomerNumber(ImportLine."Customer Name") then begin
+            ImportLine.AppendError(StrSubstNo('Customer No. %1 does not exist', ImportLine."Customer No."));
+            HasErrors := true;
+        end;
 
         // Resolve Ratio
         if not MappingHelper.ValidateRatioExists(ImportLine.Ratio) then begin

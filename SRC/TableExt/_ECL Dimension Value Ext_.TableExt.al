@@ -2,7 +2,7 @@ tableextension 50500 "ECL Dimension Value Ext" extends "Dimension Value"
 {
     fields
     {
-        field(50500; "ECL Activity"; Code[50])
+        field(50500; "ECL Activity"; Code[100])
         {
             Caption = 'ECL Activity';
             Description = 'Activity code for QuickClaim import';

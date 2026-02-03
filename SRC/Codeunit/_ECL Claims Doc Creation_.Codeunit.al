@@ -183,8 +183,8 @@ codeunit 50502 "ECL Claims Doc Creation"
         // Set Posting No. to Invoice Number from file (so it becomes the Posted Invoice No.)
         SalesHeader."Posting No." := CopyStr(ImportLine."Invoice Number", 1, MaxStrLen(SalesHeader."Posting No."));
         // Set Location if available
-        if ImportLine."Location Code" <> '' then
-            SalesHeader.Validate("Location Code", ImportLine."Location Code");
+        // if ImportLine."Location Code" <> '' then
+        //     SalesHeader.Validate("Location Code", ImportLine."Location Code");
         SalesHeader.Modify(true);
     end;
     /// <summary>
@@ -215,19 +215,20 @@ codeunit 50502 "ECL Claims Doc Creation"
             SalesLine.Validate(Type, SalesLine.Type::Item);
             SalesLine.Validate("No.", ImportLine."Item No.");
         end
-        else if ImportLine."NDIS Number" <> '' then begin
-            // Try to find item by NDIS Number
-            Item.SetRange("No.", ImportLine."NDIS Number");
+        else if ImportLine."Support Item" <> '' then begin
+            // Try to find item by Support Item
+            Item.SetRange("No.", ImportLine."Support Item");
             if Item.FindFirst() then begin
                 SalesLine.Validate(Type, SalesLine.Type::Item);
+                SalesLine.Validate("New No.", Item."No.");
                 SalesLine.Validate("No.", Item."No.");
                 ImportLine."Item No." := Item."No.";
             end
             else
-                Error('Item not found for NDIS Number: %1', ImportLine."NDIS Number");
+                Error('Item not found for Support Item: %1', ImportLine."Support Item");
         end
         else
-            Error('No Item No. or NDIS Number specified for line');
+            Error('No Item No. or Support Item specified for line');
 
         // Set quantity and price
         SalesLine.Validate(Quantity, ImportLine."Quantity Decimal");
@@ -237,9 +238,9 @@ codeunit 50502 "ECL Claims Doc Creation"
         if ImportLine.Description <> '' then
             SalesLine.Description := CopyStr(ImportLine.Description, 1, MaxStrLen(SalesLine.Description));
 
-        // Set Location
-        if ImportLine."Location Code" <> '' then
-            SalesLine.Validate("Location Code", ImportLine."Location Code");
+        // // Set Location
+        // if ImportLine."Location Code" <> '' then
+        //     SalesLine.Validate("Location Code", ImportLine."Location Code");
 
         SalesLine.Modify(true);
 
