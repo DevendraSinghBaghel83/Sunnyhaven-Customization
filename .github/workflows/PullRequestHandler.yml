@@ -1,0 +1,118 @@
+name: 'Pull Request Build'
+
+on:
+  pull_request_target:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+      - '.github/*.json'
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: write
+
+defaults:
+  run:
+    shell: powershell
+
+env:
+  ALGoOrgSettings: ${{ vars.ALGoOrgSettings }}
+  ALGoRepoSettings: ${{ vars.ALGoRepoSettings }}
+
+jobs:
+  Initialization:
+    runs-on: windows-latest
+    outputs:
+      projects: ${{ steps.determineProjectsToBuild.outputs.ProjectsJson }}
+      projectsCount: ${{ steps.determineProjectsToBuild.outputs.ProjectsCount }}
+      settings: ${{ steps.readSettings.outputs.SettingsJson }}
+      buildModes: ${{ steps.readSettings.outputs.BuildModesJson }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Initialize the workflow
+        id: init
+        uses: microsoft/AL-Go-Actions/WorkflowInitialize@v6.1
+        with:
+          shell: powershell
+          eventId: 'DO0104'
+
+      - name: Read Settings
+        id: readSettings
+        uses: microsoft/AL-Go-Actions/ReadSettings@v6.1
+        with:
+          shell: powershell
+
+      - name: Determine Projects To Build
+        id: determineProjectsToBuild
+        uses: microsoft/AL-Go-Actions/DetermineProjectsToBuild@v6.1
+        with:
+          shell: powershell
+          baseFolder: ${{ github.workspace }}
+
+  Build:
+    needs: Initialization
+    if: needs.Initialization.outputs.projectsCount > 0
+    runs-on: ${{ fromJson(needs.Initialization.outputs.settings).githubRunner }}
+    strategy:
+      matrix:
+        project: ${{ fromJson(needs.Initialization.outputs.projects) }}
+        buildMode: ${{ fromJson(needs.Initialization.outputs.buildModes) }}
+      fail-fast: false
+    name: Build ${{ matrix.project }} (${{ matrix.buildMode }})
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Read Settings
+        uses: microsoft/AL-Go-Actions/ReadSettings@v6.1
+        with:
+          shell: powershell
+          project: ${{ matrix.project }}
+
+      - name: Read Secrets
+        id: readSecrets
+        uses: microsoft/AL-Go-Actions/ReadSecrets@v6.1
+        with:
+          shell: powershell
+          gitHubSecrets: ${{ toJson(secrets) }}
+          getSecrets: 'licenseFileUrl,insiderSasToken'
+
+      - name: Run Pipeline
+        id: runPipeline
+        uses: microsoft/AL-Go-Actions/RunPipeline@v6.1
+        with:
+          shell: powershell
+          project: ${{ matrix.project }}
+          buildMode: ${{ matrix.buildMode }}
+          secrets: '${{ steps.readSecrets.outputs.Secrets }}'
+
+      - name: Cleanup
+        if: always()
+        uses: microsoft/AL-Go-Actions/PipelineCleanup@v6.1
+        with:
+          shell: powershell
+          project: ${{ matrix.project }}
+
+  PostProcess:
+    runs-on: windows-latest
+    needs: [ Initialization, Build ]
+    if: always()
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Finalize the workflow
+        id: PostProcess
+        uses: microsoft/AL-Go-Actions/WorkflowPostProcess@v6.1
+        with:
+          shell: powershell
+          eventId: 'DO0104'
+          telemetryScopeJson: ${{ needs.Initialization.outputs.telemetryScopeJson }}

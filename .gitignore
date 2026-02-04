@@ -1,0 +1,26 @@
+# AL-Go for GitHub - Business Central Extension
+
+# Build outputs
+*.app
+*.zip
+.buildartifacts/
+.output/
+
+# AL packages (dependencies - will be downloaded during build)
+.alpackages/
+
+# VS Code cache
+.vscode/.alcache/
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Environment files
+.env
+.env.local
+
+# Temporary files
+*.tmp
+*.temp
+*.log
