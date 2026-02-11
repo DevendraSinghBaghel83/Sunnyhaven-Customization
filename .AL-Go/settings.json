@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/AL-Go-Actions/v8.1/.Modules/settings.schema.json",
+  "country": "au",
+  "repoVersion": "1.0",
+  "appFolders": [
+    "."
+  ],
+  "testFolders": [],
+  "bcptTestFolders": [],
+  "projectName": "SunnyhavenCustomizations"
+}

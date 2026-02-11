@@ -1,0 +1,81 @@
+name: 'Create Online Dev Environment'
+
+on:
+  workflow_dispatch:
+    inputs:
+      environmentName:
+        description: 'Name of the online environment'
+        required: true
+      reUseExistingEnvironment:
+        description: 'Reuse existing environment if it exists'
+        type: boolean
+        default: false
+      directCommit:
+        description: 'Direct commit to branch'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+defaults:
+  run:
+    shell: powershell
+
+env:
+  ALGoOrgSettings: ${{ vars.ALGoOrgSettings }}
+  ALGoRepoSettings: ${{ vars.ALGoRepoSettings }}
+
+jobs:
+  CreateOnlineDevelopmentEnvironment:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Initialize the workflow
+        id: init
+        uses: microsoft/AL-Go-Actions/WorkflowInitialize@v6.1
+        with:
+          shell: powershell
+          eventId: 'DO0093'
+
+      - name: Read Settings
+        uses: microsoft/AL-Go-Actions/ReadSettings@v6.1
+        with:
+          shell: powershell
+
+      - name: Read Secrets
+        id: readSecrets
+        uses: microsoft/AL-Go-Actions/ReadSecrets@v6.1
+        with:
+          shell: powershell
+          gitHubSecrets: ${{ toJson(secrets) }}
+          getSecrets: 'adminCenterApiCredentials,ghTokenWorkflow'
+
+      - name: Create Online Development Environment
+        uses: microsoft/AL-Go-Actions/CreateDevelopmentEnvironment@v6.1
+        with:
+          shell: powershell
+          token: ${{ steps.readSecrets.outputs.ghTokenWorkflow }}
+          adminCenterApiCredentials: ${{ steps.readSecrets.outputs.adminCenterApiCredentials }}
+          environmentName: ${{ github.event.inputs.environmentName }}
+          reUseExistingEnvironment: ${{ github.event.inputs.reUseExistingEnvironment }}
+          directCommit: ${{ github.event.inputs.directCommit }}
+
+  PostProcess:
+    runs-on: windows-latest
+    needs: CreateOnlineDevelopmentEnvironment
+    if: always()
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Finalize the workflow
+        id: PostProcess
+        uses: microsoft/AL-Go-Actions/WorkflowPostProcess@v6.1
+        with:
+          shell: powershell
+          eventId: 'DO0093'
+          telemetryScopeJson: ${{ needs.CreateOnlineDevelopmentEnvironment.outputs.telemetryScopeJson }}

@@ -1,0 +1,38 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/AL-Go-Actions/v8.1/.Modules/settings.schema.json",
+  "type": "PTE",
+  "templateUrl": "https://github.com/microsoft/AL-Go-PTE@main",
+  "country": "au",
+  "repoVersion": "1.0",
+  "runs-on": "windows-latest",
+  "githubRunner": "windows-latest",
+  "enableCodeCop": true,
+  "enableUICop": true,
+  "enablePerTenantExtensionCop": true,
+  "failOn": "error",
+  "versioningStrategy": 0,
+  "CICDPushBranches": [
+    "main",
+    "release/*",
+    "feature/*"
+  ],
+  "CICDPullRequestBranches": [
+    "main"
+  ],
+  "environments": [
+    "Development",
+    "Production"
+  ],
+  "DeployToDevelopment": {
+    "EnvironmentType": "SaaS",
+    "EnvironmentName": "Development",
+    "Branches": ["main", "feature/*"],
+    "ContinuousDeployment": true
+  },
+  "DeployToProduction": {
+    "EnvironmentType": "SaaS",
+    "EnvironmentName": "Production",
+    "Branches": ["main"],
+    "ContinuousDeployment": false
+  }
+}

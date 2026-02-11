@@ -1,0 +1,94 @@
+name: 'Publish to Environment'
+
+on:
+  workflow_dispatch:
+    inputs:
+      appVersion:
+        description: 'App version to publish'
+        required: true
+        default: 'latest'
+      environmentName:
+        description: 'Environment to publish to'
+        required: true
+
+permissions:
+  contents: read
+  actions: read
+
+defaults:
+  run:
+    shell: powershell
+
+env:
+  ALGoOrgSettings: ${{ vars.ALGoOrgSettings }}
+  ALGoRepoSettings: ${{ vars.ALGoRepoSettings }}
+
+jobs:
+  Initialization:
+    runs-on: windows-latest
+    outputs:
+      settings: ${{ steps.readSettings.outputs.SettingsJson }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Initialize the workflow
+        id: init
+        uses: microsoft/AL-Go-Actions/WorkflowInitialize@v6.1
+        with:
+          shell: powershell
+          eventId: 'DO0097'
+
+      - name: Read Settings
+        id: readSettings
+        uses: microsoft/AL-Go-Actions/ReadSettings@v6.1
+        with:
+          shell: powershell
+
+  Deploy:
+    needs: Initialization
+    runs-on: ${{ fromJson(needs.Initialization.outputs.settings).runs-on }}
+    environment:
+      name: ${{ github.event.inputs.environmentName }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read Settings
+        uses: microsoft/AL-Go-Actions/ReadSettings@v6.1
+        with:
+          shell: powershell
+
+      - name: Read Secrets
+        id: readSecrets
+        uses: microsoft/AL-Go-Actions/ReadSecrets@v6.1
+        with:
+          shell: powershell
+          gitHubSecrets: ${{ toJson(secrets) }}
+          getSecrets: '${{ github.event.inputs.environmentName }}_AuthContext,AuthContext'
+
+      - name: Deploy
+        uses: microsoft/AL-Go-Actions/Deploy@v6.1
+        with:
+          shell: powershell
+          type: 'Publish'
+          projects: '*'
+          environmentName: ${{ github.event.inputs.environmentName }}
+          artifacts: ${{ github.event.inputs.appVersion }}
+          authContext: ${{ steps.readSecrets.outputs.Secrets }}
+
+  PostProcess:
+    runs-on: windows-latest
+    needs: [ Initialization, Deploy ]
+    if: always()
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Finalize the workflow
+        id: PostProcess
+        uses: microsoft/AL-Go-Actions/WorkflowPostProcess@v6.1
+        with:
+          shell: powershell
+          eventId: 'DO0097'
+          telemetryScopeJson: ${{ needs.Initialization.outputs.telemetryScopeJson }}

@@ -1,0 +1,108 @@
+name: 'Create Release'
+
+on:
+  workflow_dispatch:
+    inputs:
+      appVersion:
+        description: 'App version to release (Major.Minor)'
+        required: true
+        default: ''
+      name:
+        description: 'Name of release (default is the app version)'
+        required: false
+        default: ''
+      tag:
+        description: 'Tag for release (default is version)'
+        required: false
+        default: ''
+      draft:
+        description: 'Create as draft release'
+        type: boolean
+        default: true
+      prerelease:
+        description: 'Create as pre-release'
+        type: boolean
+        default: false
+      updateVersionNumber:
+        description: 'Update version number after release (+1.0, +0.1)'
+        required: false
+        default: '+0.1'
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: read
+
+defaults:
+  run:
+    shell: powershell
+
+env:
+  ALGoOrgSettings: ${{ vars.ALGoOrgSettings }}
+  ALGoRepoSettings: ${{ vars.ALGoRepoSettings }}
+
+jobs:
+  CreateRelease:
+    runs-on: windows-latest
+    outputs:
+      artifacts: ${{ steps.createRelease.outputs.Artifacts }}
+      releaseId: ${{ steps.createRelease.outputs.ReleaseId }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Initialize the workflow
+        id: init
+        uses: microsoft/AL-Go-Actions/WorkflowInitialize@v6.1
+        with:
+          shell: powershell
+          eventId: 'DO0094'
+
+      - name: Read Settings
+        uses: microsoft/AL-Go-Actions/ReadSettings@v6.1
+        with:
+          shell: powershell
+
+      - name: Read Secrets
+        id: readSecrets
+        uses: microsoft/AL-Go-Actions/ReadSecrets@v6.1
+        with:
+          shell: powershell
+          gitHubSecrets: ${{ toJson(secrets) }}
+          getSecrets: 'ghTokenWorkflow'
+
+      - name: Determine Projects
+        id: determineProjects
+        uses: microsoft/AL-Go-Actions/DetermineProjectsToBuild@v6.1
+        with:
+          shell: powershell
+
+      - name: Create Release
+        id: createRelease
+        uses: microsoft/AL-Go-Actions/CreateRelease@v6.1
+        with:
+          shell: powershell
+          token: ${{ steps.readSecrets.outputs.ghTokenWorkflow }}
+          projects: ${{ steps.determineProjects.outputs.ProjectsJson }}
+          appVersion: ${{ github.event.inputs.appVersion }}
+          name: ${{ github.event.inputs.name }}
+          tag: ${{ github.event.inputs.tag }}
+          draft: ${{ github.event.inputs.draft }}
+          prerelease: ${{ github.event.inputs.prerelease }}
+          updateVersionNumber: ${{ github.event.inputs.updateVersionNumber }}
+
+  PostProcess:
+    runs-on: windows-latest
+    needs: CreateRelease
+    if: always()
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Finalize the workflow
+        id: PostProcess
+        uses: microsoft/AL-Go-Actions/WorkflowPostProcess@v6.1
+        with:
+          shell: powershell
+          eventId: 'DO0094'
+          telemetryScopeJson: ${{ needs.CreateRelease.outputs.telemetryScopeJson }}
