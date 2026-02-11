@@ -29,6 +29,7 @@ jobs:
       projectsCount: ${{ steps.determineProjectsToBuild.outputs.ProjectsCount }}
       settings: ${{ steps.readSettings.outputs.SettingsJson }}
       buildModes: ${{ steps.readSettings.outputs.BuildModesJson }}
+      telemetryScopeJson: ${{ steps.init.outputs.telemetryScopeJson }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -37,23 +38,21 @@ jobs:
 
       - name: Initialize the workflow
         id: init
-        uses: microsoft/AL-Go-Actions/WorkflowInitialize@v6.1
+        uses: microsoft/AL-Go-Actions/WorkflowInitialize@v6.0
         with:
           shell: powershell
-          eventId: 'DO0104'
 
       - name: Read Settings
         id: readSettings
-        uses: microsoft/AL-Go-Actions/ReadSettings@v6.1
+        uses: microsoft/AL-Go-Actions/ReadSettings@v6.0
         with:
           shell: powershell
 
       - name: Determine Projects To Build
         id: determineProjectsToBuild
-        uses: microsoft/AL-Go-Actions/DetermineProjectsToBuild@v6.1
+        uses: microsoft/AL-Go-Actions/DetermineProjectsToBuild@v6.0
         with:
           shell: powershell
-          baseFolder: ${{ github.workspace }}
 
   Build:
     needs: Initialization
@@ -72,14 +71,14 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Read Settings
-        uses: microsoft/AL-Go-Actions/ReadSettings@v6.1
+        uses: microsoft/AL-Go-Actions/ReadSettings@v6.0
         with:
           shell: powershell
           project: ${{ matrix.project }}
 
       - name: Read Secrets
         id: readSecrets
-        uses: microsoft/AL-Go-Actions/ReadSecrets@v6.1
+        uses: microsoft/AL-Go-Actions/ReadSecrets@v6.0
         with:
           shell: powershell
           gitHubSecrets: ${{ toJson(secrets) }}
@@ -87,7 +86,7 @@ jobs:
 
       - name: Run Pipeline
         id: runPipeline
-        uses: microsoft/AL-Go-Actions/RunPipeline@v6.1
+        uses: microsoft/AL-Go-Actions/RunPipeline@v6.0
         with:
           shell: powershell
           project: ${{ matrix.project }}
@@ -96,7 +95,7 @@ jobs:
 
       - name: Cleanup
         if: always()
-        uses: microsoft/AL-Go-Actions/PipelineCleanup@v6.1
+        uses: microsoft/AL-Go-Actions/PipelineCleanup@v6.0
         with:
           shell: powershell
           project: ${{ matrix.project }}
@@ -111,8 +110,7 @@ jobs:
 
       - name: Finalize the workflow
         id: PostProcess
-        uses: microsoft/AL-Go-Actions/WorkflowPostProcess@v6.1
+        uses: microsoft/AL-Go-Actions/WorkflowPostProcess@v6.0
         with:
           shell: powershell
-          eventId: 'DO0104'
           telemetryScopeJson: ${{ needs.Initialization.outputs.telemetryScopeJson }}
