@@ -32,7 +32,7 @@ table 50500 "ECL Claims Import Batch"
         {
             Caption = 'Created By';
         }
-        field(7; Status;Enum "ECL Batch Status")
+        field(7; Status; Enum "ECL Batch Status")
         {
             Caption = 'Status';
             InitValue = Open;
@@ -133,18 +133,19 @@ table 50500 "ECL Claims Import Batch"
     /// <summary>
     /// Generate next batch number
     /// </summary>
-    procedure GetNextBatchNo(): Code[20]var
+    procedure GetNextBatchNo(): Code[20]
+    var
         ImportBatch: Record "ECL Claims Import Batch";
         NextNo: Integer;
     begin
         ImportBatch.SetCurrentKey("Batch No.");
-        if ImportBatch.FindLast()then begin
-            if Evaluate(NextNo, ImportBatch."Batch No.")then NextNo+=1
+        if ImportBatch.FindLast() then begin
+            if Evaluate(NextNo, ImportBatch."Batch No.") then NextNo += 1
             else
-                NextNo:=1;
+                NextNo := 1;
         end
         else
-            NextNo:=1;
+            NextNo := 1;
         exit(Format(NextNo, 0, '<Integer,6><Filler Character,0>'));
     end;
 }

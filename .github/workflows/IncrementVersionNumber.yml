@@ -26,35 +26,36 @@ env:
 jobs:
   IncrementVersionNumber:
     runs-on: windows-latest
+    outputs:
+      telemetryScopeJson: ${{ steps.init.outputs.telemetryScopeJson }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Initialize the workflow
         id: init
-        uses: microsoft/AL-Go-Actions/WorkflowInitialize@v6.1
+        uses: microsoft/AL-Go-Actions/WorkflowInitialize@v6.0
         with:
           shell: powershell
-          eventId: 'DO0096'
 
       - name: Read Settings
-        uses: microsoft/AL-Go-Actions/ReadSettings@v6.1
+        uses: microsoft/AL-Go-Actions/ReadSettings@v6.0
         with:
           shell: powershell
 
       - name: Read Secrets
         id: readSecrets
-        uses: microsoft/AL-Go-Actions/ReadSecrets@v6.1
+        uses: microsoft/AL-Go-Actions/ReadSecrets@v6.0
         with:
           shell: powershell
           gitHubSecrets: ${{ toJson(secrets) }}
           getSecrets: 'ghTokenWorkflow'
 
       - name: Increment Version Number
-        uses: microsoft/AL-Go-Actions/IncrementVersionNumber@v6.1
+        uses: microsoft/AL-Go-Actions/IncrementVersionNumber@v6.0
         with:
           shell: powershell
-          token: ${{ steps.readSecrets.outputs.ghTokenWorkflow }}
+          token: ${{ steps.readSecrets.outputs.ghTokenWorkflow || github.token }}
           versionNumber: ${{ github.event.inputs.versionNumber }}
           directCommit: ${{ github.event.inputs.directCommit }}
 
@@ -68,8 +69,7 @@ jobs:
 
       - name: Finalize the workflow
         id: PostProcess
-        uses: microsoft/AL-Go-Actions/WorkflowPostProcess@v6.1
+        uses: microsoft/AL-Go-Actions/WorkflowPostProcess@v6.0
         with:
           shell: powershell
-          eventId: 'DO0096'
           telemetryScopeJson: ${{ needs.IncrementVersionNumber.outputs.telemetryScopeJson }}

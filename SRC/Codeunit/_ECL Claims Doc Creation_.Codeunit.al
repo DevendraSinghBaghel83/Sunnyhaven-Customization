@@ -283,7 +283,7 @@ codeunit 50502 "ECL Claims Doc Creation"
     begin
         // Validate dimension value exists
         if not DimValue.Get(DimCode, DimValueCode) then
-            exit;   //Error('Dimension Value %1 for Dimension %2 not found', DimValueCode, DimCode);
+            Error('Dimension Value %1 for Dimension %2 not found', DimValueCode, DimCode);
 
 
         // Get G/L Setup to check shortcut dimensions

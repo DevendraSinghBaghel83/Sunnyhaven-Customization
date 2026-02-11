@@ -29,35 +29,36 @@ env:
 jobs:
   UpdateALGoSystemFiles:
     runs-on: windows-latest
+    outputs:
+      telemetryScopeJson: ${{ steps.init.outputs.telemetryScopeJson }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Initialize the workflow
         id: init
-        uses: microsoft/AL-Go-Actions/WorkflowInitialize@v6.1
+        uses: microsoft/AL-Go-Actions/WorkflowInitialize@v6.0
         with:
           shell: powershell
-          eventId: 'DO0098'
 
       - name: Read Settings
-        uses: microsoft/AL-Go-Actions/ReadSettings@v6.1
+        uses: microsoft/AL-Go-Actions/ReadSettings@v6.0
         with:
           shell: powershell
 
       - name: Read Secrets
         id: readSecrets
-        uses: microsoft/AL-Go-Actions/ReadSecrets@v6.1
+        uses: microsoft/AL-Go-Actions/ReadSecrets@v6.0
         with:
           shell: powershell
           gitHubSecrets: ${{ toJson(secrets) }}
           getSecrets: 'ghTokenWorkflow'
 
       - name: Update AL-Go System Files
-        uses: microsoft/AL-Go-Actions/CheckForUpdates@v6.1
+        uses: microsoft/AL-Go-Actions/CheckForUpdates@v6.0
         with:
           shell: powershell
-          token: ${{ steps.readSecrets.outputs.ghTokenWorkflow }}
+          token: ${{ steps.readSecrets.outputs.ghTokenWorkflow || github.token }}
           templateUrl: ${{ github.event.inputs.templateUrl }}
           update: true
           directCommit: ${{ github.event.inputs.directCommit }}
@@ -72,8 +73,7 @@ jobs:
 
       - name: Finalize the workflow
         id: PostProcess
-        uses: microsoft/AL-Go-Actions/WorkflowPostProcess@v6.1
+        uses: microsoft/AL-Go-Actions/WorkflowPostProcess@v6.0
         with:
           shell: powershell
-          eventId: 'DO0098'
           telemetryScopeJson: ${{ needs.UpdateALGoSystemFiles.outputs.telemetryScopeJson }}

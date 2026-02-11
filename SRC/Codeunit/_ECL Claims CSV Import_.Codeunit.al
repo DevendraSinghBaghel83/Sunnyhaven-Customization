@@ -37,33 +37,7 @@ codeunit 50500 "ECL Claims CSV Import"
     end;
     /// <summary>
     /// Parse CSV and create import lines
-    // /// </summary>
-
-    // local procedure ImportCSVLines(BatchNo: Code[20]; var InStr: InStream)
-    // var
-    //     ImportLine: Record "ECL Claims Import Line";
-    //     LineText: Text;
-    //     RowNo: Integer;
-    //     LineNo: Integer;
-    // begin
-    //     RowNo := 1;
-    //     LineNo := 10000;
-    //     while not InStr.EOS do begin
-    //         InStr.ReadText(LineText);
-    //         RowNo += 1;
-    //         // Skip empty lines
-    //         if LineText.Trim() <> '' then begin
-    //             ImportLine.Init();
-    //             ImportLine."Batch No." := BatchNo;
-    //             ImportLine."Line No." := LineNo;
-    //             ImportLine."Source Row No." := RowNo;
-    //             ParseCSVLine(ImportLine, LineText);
-    //             ImportLine.Status := ImportLine.Status::Imported;
-    //             ImportLine.Insert(true);
-    //             LineNo += 10000;
-    //         end;
-    //     end;
-    // end;
+    /// </summary>
 
     local procedure ImportCSVLines(BatchNo: Code[20]; var InStr: InStream)
     var
@@ -140,8 +114,7 @@ codeunit 50500 "ECL Claims CSV Import"
         // 30 ndisNumber -> "NDIS Number"
         // -------------------------------------------------
         if TryGetField(Fields, 30, Txt) then
-            ImportLine."NDIS Number" := CopyStr(Txt, 1, MaxStrLen(ImportLine."NDIS Number"));//changes - ajad
-                                                                                             //ImportLine."Support Item" := CopyStr(Txt, 1, MaxStrLen(ImportLine."Support Item")); // changes - ajad
+            ImportLine."NDIS Number" := CopyStr(Txt, 1, MaxStrLen(ImportLine."NDIS Number"));
 
 
         // -------------------------------------------------

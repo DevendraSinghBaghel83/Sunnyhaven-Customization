@@ -23,10 +23,6 @@ on:
         description: 'Create as pre-release'
         type: boolean
         default: false
-      updateVersionNumber:
-        description: 'Update version number after release (+1.0, +0.1)'
-        required: false
-        default: '+0.1'
 
 permissions:
   contents: write
@@ -47,25 +43,25 @@ jobs:
     outputs:
       artifacts: ${{ steps.createRelease.outputs.Artifacts }}
       releaseId: ${{ steps.createRelease.outputs.ReleaseId }}
+      telemetryScopeJson: ${{ steps.init.outputs.telemetryScopeJson }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Initialize the workflow
         id: init
-        uses: microsoft/AL-Go-Actions/WorkflowInitialize@v6.1
+        uses: microsoft/AL-Go-Actions/WorkflowInitialize@v6.0
         with:
           shell: powershell
-          eventId: 'DO0094'
 
       - name: Read Settings
-        uses: microsoft/AL-Go-Actions/ReadSettings@v6.1
+        uses: microsoft/AL-Go-Actions/ReadSettings@v6.0
         with:
           shell: powershell
 
       - name: Read Secrets
         id: readSecrets
-        uses: microsoft/AL-Go-Actions/ReadSecrets@v6.1
+        uses: microsoft/AL-Go-Actions/ReadSecrets@v6.0
         with:
           shell: powershell
           gitHubSecrets: ${{ toJson(secrets) }}
@@ -73,23 +69,23 @@ jobs:
 
       - name: Determine Projects
         id: determineProjects
-        uses: microsoft/AL-Go-Actions/DetermineProjectsToBuild@v6.1
+        uses: microsoft/AL-Go-Actions/DetermineProjectsToBuild@v6.0
         with:
           shell: powershell
 
       - name: Create Release
         id: createRelease
-        uses: microsoft/AL-Go-Actions/CreateRelease@v6.1
+        uses: microsoft/AL-Go-Actions/CreateRelease@v6.0
         with:
           shell: powershell
-          token: ${{ steps.readSecrets.outputs.ghTokenWorkflow }}
+          token: ${{ steps.readSecrets.outputs.ghTokenWorkflow || github.token }}
+          parentTelemetryScopeJson: ${{ steps.init.outputs.telemetryScopeJson }}
           projects: ${{ steps.determineProjects.outputs.ProjectsJson }}
           appVersion: ${{ github.event.inputs.appVersion }}
           name: ${{ github.event.inputs.name }}
           tag: ${{ github.event.inputs.tag }}
           draft: ${{ github.event.inputs.draft }}
           prerelease: ${{ github.event.inputs.prerelease }}
-          updateVersionNumber: ${{ github.event.inputs.updateVersionNumber }}
 
   PostProcess:
     runs-on: windows-latest
@@ -101,8 +97,7 @@ jobs:
 
       - name: Finalize the workflow
         id: PostProcess
-        uses: microsoft/AL-Go-Actions/WorkflowPostProcess@v6.1
+        uses: microsoft/AL-Go-Actions/WorkflowPostProcess@v6.0
         with:
           shell: powershell
-          eventId: 'DO0094'
           telemetryScopeJson: ${{ needs.CreateRelease.outputs.telemetryScopeJson }}
