@@ -145,7 +145,7 @@ table 50500 "ECL Claims Import Batch"
                 NextNo := 1;
         end
         else
-            NextNo:=1;
+            NextNo := 1;
         exit(Format(NextNo, 0, '<Integer,6><Filler Character,0>'));
     end;
 }
