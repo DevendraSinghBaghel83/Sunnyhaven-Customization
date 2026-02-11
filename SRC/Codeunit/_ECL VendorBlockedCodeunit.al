@@ -65,9 +65,6 @@ codeunit 50101 BankAccountVendorBlocker
     //             Error('The item %1 is blocked for Purchase.', Rec."No.");
     //     end;
     // end;
-
-    var
-        myInt: Integer;
 }
 
 

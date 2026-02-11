@@ -18,7 +18,4 @@ tableextension 50120 ReturnReceiptHeaderExt extends "Return Receipt Header"
     {
         // Add changes to field groups here
     }
-
-    var
-        myInt: Integer;
 }
